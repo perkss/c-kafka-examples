@@ -1,5 +1,6 @@
 # C Kafka Examples
 
+Mixing the old with the new. Kafka examples with C using [RDKafka](https://github.com/edenhill/librdkafka).
 
 ### MAC OS Installation
 1) Install the dependent library for Kafka:
