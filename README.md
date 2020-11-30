@@ -30,15 +30,21 @@ make
 
 ### Option 2 Command Build
 
-TODO fix this now multiple files
-Then compile the consumer to an executable name `myconsumer`
+[Lib File Mac Ref](https://stackoverflow.com/questions/3532589/how-to-build-a-dylib-from-several-o-in-mac-os-x-using-gcc)
+[Header File Library](https://stackoverflow.com/questions/58334781/mac-dylib-linking-cannot-find-header)
+
 ```shell script
-#FIXME
+# Create object files for the Library files
 gcc -Wall -g -c src/consumer.c -o consumer.o -I include/
 gcc -Wall -g -c src/UppercaseTopology.c -o UppercaseTopology.o -I include/
+# Todo UNIX?
 ar ruv mylib.a consumer.o UppercaseTopology.o
-gcc -Wall -std=c11 -LLibProject/ -lmy -lrdkafka MainProject/src/main.c -o myconsumer
-gcc -Wall -std=c11 -LLibProject/ -lmy -lrdkafka MainProject/src/main.c -o myconsumer -I LibProject/include
+# Create Mac Shared Lib
+gcc -dynamiclib -undefined suppress -flat_namespace consumer.o UppercaseTopology.o -o libmyProject.dylib
+
+# Need to be in the directory where the .dylib file is 
+gcc -Wall -std=c11 -L/Users/Stuart/Documents/Programming/C_Programming/c-kafka-examples/LibProject/ -lmyProject -lrdkafka MainProject/src/main.c -o myconsumer -I LibProject/include
+
 ```
 Note we found the `rdkafka` library and linked as its on the usual path we can search for it using 
 
