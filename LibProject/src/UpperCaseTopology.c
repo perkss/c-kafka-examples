@@ -1,6 +1,3 @@
-//
-// Created by Stuart Perks on 30/11/2020.
-//
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -11,14 +8,19 @@
 #include "UppercaseTopology.h"
 
 // TODO pass as reference pointer
-int my_callback(message_t param, rd_kafka_t** producer)
+int process_message_and_send(message_t** param, rd_kafka_t** producer)
 {
+    message_t *msg = *param;
+
     printf(" Value: %.*s\n",
-           (int) param.payload_length, (const char *) param.payload);
+           (int) msg->payload_length, (const char *) msg->payload);
 
-    produce(producer, "uppercase-topic", param.key, param.payload);
+    produce(producer, "uppercase-topic", msg->key, msg->payload);
 
-    return param.key_length;
+    free(msg->key);
+    free(msg);
+
+    return 0;
 }
 
 int runTopology(int argc, char **argv) {
@@ -134,7 +136,7 @@ int runTopology(int argc, char **argv) {
     // Define the consumer thread ID
     pthread_t consumer_thread_id;
 
-    pthread_create(&consumer_thread_id, NULL, consume(&rk, my_callback, &rkProducer), NULL );
+    pthread_create(&consumer_thread_id, NULL, consume(&rk, process_message_and_send, &rkProducer), NULL );
 
     printf("Created thread for consuming");
 

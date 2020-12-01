@@ -1,7 +1,3 @@
-//
-// Created by Stuart Perks on 25/11/2020.
-//
-
 #ifndef C_KAFKA_EXAMPLES_PRODUCER_H
 #define C_KAFKA_EXAMPLES_PRODUCER_H
 #include <librdkafka/rdkafka.h>

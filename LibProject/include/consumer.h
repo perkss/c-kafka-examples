@@ -14,7 +14,7 @@ int createConsumer(rd_kafka_t **rk, rd_kafka_conf_t *conf, char errstr[512]);
 
 int subscribe(rd_kafka_t **rk, int topic_cnt, char** topics);
 
-void *consume(rd_kafka_t **rk, int (*cc)(message_t, rd_kafka_t**), rd_kafka_t **producer);
+void *consume(rd_kafka_t **rk, int (*cc)(message_t**, rd_kafka_t**), rd_kafka_t **producer);
 
 void cleanUp(rd_kafka_t **rk);
 

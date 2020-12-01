@@ -60,12 +60,14 @@ docker exec kafka-1 kafka-topics --create --zookeeper zookeeper-1:22181 --replic
 ```
 
 ```shell script
-docker exec kafka-1 kafka-topics --zookeeper zookeeper-1:22181 --list
+docker exec kafka-1 kafka-topics --create --zookeeper zookeeper-1:22181 --replication-factor 1 --partitions 1 --topic uppercase-topic
 ```
 
 ```shell script
-docker exec kafka-1 kafka-topics --create --zookeeper zookeeper-1:22181 --replication-factor 1 --partitions 1 --topic uppercase-topic
+docker exec kafka-1 kafka-topics --zookeeper zookeeper-1:22181 --list
 ```
+
+
 
 ```shell script
 ./myconsumer localhost:9091 my-lowercase-consumer lowercase-topic
