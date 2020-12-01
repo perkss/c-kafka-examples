@@ -63,7 +63,9 @@ docker exec kafka-1 kafka-topics --create --zookeeper zookeeper-1:22181 --replic
 docker exec kafka-1 kafka-topics --zookeeper zookeeper-1:22181 --list
 ```
 
-
+```shell script
+docker exec kafka-1 kafka-topics --create --zookeeper zookeeper-1:22181 --replication-factor 1 --partitions 1 --topic uppercase-topic
+```
 
 ```shell script
 ./myconsumer localhost:9091 my-lowercase-consumer lowercase-topic
@@ -73,10 +75,18 @@ docker exec kafka-1 kafka-topics --zookeeper zookeeper-1:22181 --list
 docker exec -it kafka-1 kafka-console-producer --broker-list kafka-1:29091 --topic lowercase-topic --property "parse.key=true" --property "key.separator=:"
 ```
 
+```shell script
+docker exec kafka-1 kafka-console-consumer --bootstrap-server kafka-1:29091 --topic uppercase-topic --property print.key=true --property key.separator="-" --from-beginning
+```
+
+
 ## Useful Docker
 Stop and remove all running containers.
 ```shell script
 docker stop $(docker ps -a -q)
 docker rm $(docker ps -a -q)
 ```
+
+## TODO
+* Avro example
 

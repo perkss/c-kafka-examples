@@ -2,17 +2,33 @@
 // Created by Stuart Perks on 30/11/2020.
 //
 #include <stdio.h>
+#include <stdlib.h>
 #include <pthread.h>
 #include <librdkafka/rdkafka.h>
 
 #include "consumer.h"
+#include "producer.h"
 #include "UppercaseTopology.h"
+
+// TODO pass as reference pointer
+int my_callback(message_t param, rd_kafka_t** producer)
+{
+    printf(" Value: %.*s\n",
+           (int) param.payload_length, (const char *) param.payload);
+
+    produce(producer, "uppercase-topic", param.payload);
+
+    return param.key_length;
+}
 
 int runTopology(int argc, char **argv) {
     rd_kafka_t *rk;          /* Consumer instance handle */
+    rd_kafka_t *rkProducer;          /* Producer instance handle */
     rd_kafka_conf_t *conf;   /* Temporary configuration object */
+    rd_kafka_conf_t *producer_conf;   /* Temporary configuration object */
     rd_kafka_resp_err_t err; /* librdkafka API error code */
     char errstr[512];        /* librdkafka API error reporting buffer */
+    char producer_errstr[512];        /* librdkafka API error reporting buffer */
     const char *brokers;     /* Argument: broker list */
     const char *groupid;     /* Argument: Consumer group id */
     char **topics;           /* Argument: list of topics to subscribe to */
@@ -41,11 +57,20 @@ int runTopology(int argc, char **argv) {
      */
     conf = rd_kafka_conf_new();
 
+    producer_conf = rd_kafka_conf_new();
+
     /* Set bootstrap broker(s) as a comma-separated list of
      * host or host:port (default port 9092).
      * librdkafka will use the bootstrap brokers to acquire the full
      * set of brokers from the cluster. */
     if (rd_kafka_conf_set(conf, "bootstrap.servers", brokers,
+                          errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
+        fprintf(stderr, "%s\n", errstr);
+        rd_kafka_conf_destroy(conf);
+        return 1;
+    }
+
+    if (rd_kafka_conf_set(producer_conf, "bootstrap.servers", brokers,
                           errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
         fprintf(stderr, "%s\n", errstr);
         rd_kafka_conf_destroy(conf);
@@ -86,6 +111,17 @@ int runTopology(int argc, char **argv) {
 
     int result = createConsumer(&rk, conf, errstr);
 
+    // TODO add topic to producer too
+    int producerCreationResult = createProducer(&rkProducer, producer_conf, producer_errstr);
+
+//    producer *producer1 = (producer *) malloc (sizeof(struct producer_s));
+//    producer1->rk = &rkProducer;
+//    producer1->
+
+    // TODO create struct to hold a producer and required fields, pass that into function that can call callback.
+  //  produce()
+
+
     if (result != 0) {
         return result;
     }
@@ -98,7 +134,7 @@ int runTopology(int argc, char **argv) {
     // Define the consumer thread ID
     pthread_t consumer_thread_id;
 
-    pthread_create(&consumer_thread_id, NULL, consume(&rk), NULL );
+    pthread_create(&consumer_thread_id, NULL, consume(&rk, my_callback, &rkProducer), NULL );
 
     printf("Created thread for consuming");
 

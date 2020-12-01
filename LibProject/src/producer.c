@@ -94,7 +94,7 @@ void *produce(rd_kafka_t **rk, char* topic, char* msg) {
     return 0;
 }
 
-void cleanUp(rd_kafka_t **rk) {
+void cleanUpProducer(rd_kafka_t **rk) {
     /* Wait for final messages to be delivered or fail.
          * rd_kafka_flush() is an abstraction over rd_kafka_poll() which
          * waits for all messages to be delivered. */

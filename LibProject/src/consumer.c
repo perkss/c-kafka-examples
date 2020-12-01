@@ -1,8 +1,11 @@
+#include <stdlib.h>
 #include <signal.h>
 #include <string.h>
 #include <ctype.h>
 
 #include "consumer.h"
+
+
 
 int createConsumer(rd_kafka_t **rk, rd_kafka_conf_t *conf, char errstr[512]) {
     /* Consumer instance handle */
@@ -83,7 +86,7 @@ static int is_printable(const char *buf, size_t size) {
     return 1;
 }
 
-void *consume(rd_kafka_t **rk) {
+void *consume(rd_kafka_t **rk, int (*cc)(message_t, rd_kafka_t**), rd_kafka_t **producer) {
     /* Subscribing to topics will trigger a group rebalance
  * which may take some time to finish, but there is no need
  * for the application to handle this idle period in a special way
@@ -112,24 +115,40 @@ void *consume(rd_kafka_t **rk) {
             continue;
         }
 
+
         /* Proper message. */
         printf("Message on %s [%"PRId32"] at offset %"PRId64":\n",
                rd_kafka_topic_name(rkm->rkt), rkm->partition,
                rkm->offset);
 
+        message_t *message = (message_t *) malloc (sizeof(struct message_s));
+        message->key = rkm->key;
+        message->key_length = rkm->key_len;
+        message->payload = rkm->payload;
+        message->payload_length = rkm->len;
+
+        /* Converts to uppercase in place. */
+        char *s = message->payload;
+        while (*s) {
+            *s = toupper((unsigned char) *s);
+            s++;
+        }
+
+        cc(*message, producer);
+
         /* Print the message key. */
-        if (rkm->key && is_printable(rkm->key, rkm->key_len))
+        if (message->key && is_printable(message->key, message->key_length))
             printf(" Key: %.*s\n",
-                   (int) rkm->key_len, (const char *) rkm->key);
-        else if (rkm->key)
-            printf(" Key: (%d bytes)\n", (int) rkm->key_len);
+                   (int) message->key_length, (const char *) message->key);
+        else if (message->key)
+            printf(" Key: (%d bytes)\n", (int) message->key_length);
 
         /* Print the message value/payload. */
-        if (rkm->payload && is_printable(rkm->payload, rkm->len))
+        if (message->payload && is_printable(message->payload, message->payload_length))
             printf(" Value: %.*s\n",
-                   (int) rkm->len, (const char *) rkm->payload);
-        else if (rkm->payload)
-            printf(" Value: (%d bytes)\n", (int) rkm->len);
+                   (int) message->payload_length, (const char *) message->payload);
+        else if (message->payload)
+            printf(" Value: (%d bytes)\n", (int) message->payload_length);
 
         rd_kafka_message_destroy(rkm);
     }
