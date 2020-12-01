@@ -28,7 +28,7 @@ int createProducer(rd_kafka_t **rk, rd_kafka_conf_t *conf, char errstr[512]) {
     }
 }
 
-void *produce(rd_kafka_t **rk, char* topic, char* msg) {
+void *produce(rd_kafka_t **rk, char* topic, char* key, char* msg) {
 
     rd_kafka_resp_err_t err; /* librdkafka API error code */
 // https://stackoverflow.com/questions/57052441/librdkafka-producer-to-take-a-message-from-a-function-and-produce-it-on-topic
@@ -40,6 +40,7 @@ void *produce(rd_kafka_t **rk, char* topic, char* msg) {
             RD_KAFKA_V_TOPIC(topic),
             /* Make a copy of the payload. */
             RD_KAFKA_V_MSGFLAGS(RD_KAFKA_MSG_F_COPY),
+            RD_KAFKA_V_KEY(key, strlen(key)),
             /* Message value and length */
             RD_KAFKA_V_VALUE(msg, strlen(msg)),
             /* Per-Message opaque, provided in

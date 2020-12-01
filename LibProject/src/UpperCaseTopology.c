@@ -16,7 +16,7 @@ int my_callback(message_t param, rd_kafka_t** producer)
     printf(" Value: %.*s\n",
            (int) param.payload_length, (const char *) param.payload);
 
-    produce(producer, "uppercase-topic", param.payload);
+    produce(producer, "uppercase-topic", param.key, param.payload);
 
     return param.key_length;
 }

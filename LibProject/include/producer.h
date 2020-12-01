@@ -13,6 +13,6 @@ typedef struct producer_s {
 } producer;
 
 int createProducer(rd_kafka_t **rk, rd_kafka_conf_t *conf, char errstr[512]);
-void *produce(rd_kafka_t **rk, char* topic, char* msg);
+void *produce(rd_kafka_t **rk, char* topic, char* key, char* msg);
 
 #endif //C_KAFKA_EXAMPLES_PRODUCER_H

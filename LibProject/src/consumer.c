@@ -122,7 +122,12 @@ void *consume(rd_kafka_t **rk, int (*cc)(message_t, rd_kafka_t**), rd_kafka_t **
                rkm->offset);
 
         message_t *message = (message_t *) malloc (sizeof(struct message_s));
-        message->key = rkm->key;
+
+        /* Take the key length as contains full key value otherwise*/
+        char key[rkm->key_len];
+        strncpy(key, rkm->key, rkm->key_len);
+
+        message->key = key;
         message->key_length = rkm->key_len;
         message->payload = rkm->payload;
         message->payload_length = rkm->len;
