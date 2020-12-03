@@ -1,0 +1,6 @@
+#ifndef CKAFKAEXAMPLES_UPPER_CASE_TOPOLOGY_H
+#define CKAFKAEXAMPLES_UPPER_CASE_TOPOLOGY_H
+
+int run_uppercase_topology(int argc, char **argv);
+
+#endif //CKAFKAEXAMPLES_UPPER_CASE_TOPOLOGY_H

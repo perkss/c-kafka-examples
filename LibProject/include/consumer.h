@@ -10,12 +10,12 @@ typedef struct message_s {
     char* payload;
 } message_t;
 
-int createConsumer(rd_kafka_t **rk, rd_kafka_conf_t *conf, char errstr[512]);
+int create_consumer(rd_kafka_t **rk, rd_kafka_conf_t *conf, char *errstr);
 
 int subscribe(rd_kafka_t **rk, int topic_cnt, char** topics);
 
-void *consume(rd_kafka_t **rk, int (*cc)(message_t**, rd_kafka_t**), rd_kafka_t **producer);
+void *consume(rd_kafka_t **rk, int (*process_message)(message_t**, rd_kafka_t**), rd_kafka_t **producer);
 
-void cleanUp(rd_kafka_t **rk);
+void clean_up(rd_kafka_t **rk);
 
 #endif //C_KAFKA_EXAMPLES_CONSUMER_H

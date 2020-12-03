@@ -1,7 +1,7 @@
 #include <string.h>
 #include "producer.h"
 
-int createProducer(rd_kafka_t **rk, rd_kafka_conf_t *conf, char errstr[512]) {
+int create_producer(rd_kafka_t **rk, rd_kafka_conf_t *conf, char *errstr) {
     *rk = rd_kafka_new(RD_KAFKA_PRODUCER, conf, errstr, sizeof(errstr));
     if (!*rk) {
         fprintf(stderr,
@@ -13,10 +13,10 @@ int createProducer(rd_kafka_t **rk, rd_kafka_conf_t *conf, char errstr[512]) {
     }
 }
 
-void *produce(rd_kafka_t **rk, char* topic, char* key, char* msg) {
-
+void *produce(rd_kafka_t **rk, char *topic, char *key, char *msg) {
     rd_kafka_resp_err_t err;
 
+    retry:
     err = rd_kafka_producev(
             /* Producer handle */
             *rk,
@@ -52,7 +52,7 @@ void *produce(rd_kafka_t **rk, char* topic, char* key, char* msg) {
              * configuration property
              * queue.buffering.max.messages */
             rd_kafka_poll(*rk, 1000/*block for max 1000ms*/);
-            //goto retry;
+            goto retry;
         }
     } else {
         fprintf(stderr, "%% Enqueued message (%zd bytes) "
@@ -65,9 +65,9 @@ void *produce(rd_kafka_t **rk, char* topic, char* key, char* msg) {
     return 0;
 }
 
-void cleanUpProducer(rd_kafka_t **rk) {
+void clean_up_producer(rd_kafka_t **rk) {
     fprintf(stderr, "%% Flushing final messages..\n");
-    rd_kafka_flush(*rk, 10*1000 /* wait for max 10 seconds */);
+    rd_kafka_flush(*rk, 10 * 1000 /* wait for max 10 seconds */);
 
     if (rd_kafka_outq_len(*rk) > 0)
         fprintf(stderr, "%% %d message(s) were not delivered\n",

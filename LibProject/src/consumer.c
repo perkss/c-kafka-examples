@@ -5,7 +5,7 @@
 
 #include "consumer.h"
 
-int createConsumer(rd_kafka_t **rk, rd_kafka_conf_t *conf, char errstr[512]) {
+int create_consumer(rd_kafka_t **rk, rd_kafka_conf_t *conf, char *errstr) {
     /* Consumer instance handle */
     *rk = rd_kafka_new(RD_KAFKA_CONSUMER, conf, errstr, strlen(errstr));
     if (!*rk) {
@@ -19,7 +19,6 @@ int createConsumer(rd_kafka_t **rk, rd_kafka_conf_t *conf, char errstr[512]) {
 }
 
 int subscribe(rd_kafka_t **rk, int topic_cnt, char **topics) {
-
     rd_kafka_poll_set_consumer(*rk);
 
     rd_kafka_topic_partition_list_t *subscription; /* Subscribed topics */
@@ -75,7 +74,16 @@ static char *extract_key(const rd_kafka_message_t *rkm) {
     return key;
 }
 
-void *consume(rd_kafka_t **rk, int (*cc)(message_t **, rd_kafka_t **), rd_kafka_t **producer) {
+message_t *create_message(const rd_kafka_message_t *rkm) {
+    message_t *message = (message_t *) malloc(sizeof(struct message_s));
+    message->key = extract_key(rkm);
+    message->key_length = rkm->key_len;
+    message->payload = rkm->payload;
+    message->payload_length = rkm->len;
+    return message;
+}
+
+void *consume(rd_kafka_t **rk, int (*process_message)(message_t **, rd_kafka_t **), rd_kafka_t **producer) {
     while (run) {
         rd_kafka_message_t *rkm;
 
@@ -95,22 +103,9 @@ void *consume(rd_kafka_t **rk, int (*cc)(message_t **, rd_kafka_t **), rd_kafka_
                rd_kafka_topic_name(rkm->rkt), rkm->partition,
                rkm->offset);
 
-        message_t *message = (message_t *) malloc(sizeof(struct message_s));
+        message_t *message = create_message(rkm);
 
-        // TODO think about freeing the extract key
-        message->key = extract_key(rkm);
-        message->key_length = rkm->key_len;
-        message->payload = rkm->payload;
-        message->payload_length = rkm->len;
-
-        /* Converts to uppercase in place. */
-        char *s = message->payload;
-        while (*s) {
-            *s = toupper((char) *s);
-            s++;
-        }
-
-        cc(&message, producer);
+        process_message(&message, producer);
 
         /* Print the message key. */
         if (message->key && is_printable(message->key, message->key_length))
@@ -132,7 +127,7 @@ void *consume(rd_kafka_t **rk, int (*cc)(message_t **, rd_kafka_t **), rd_kafka_
     return NULL;
 }
 
-void cleanUp(rd_kafka_t **rk) {
+void clean_up(rd_kafka_t **rk) {
     /* Signal handler for clean shutdown */
     signal(SIGINT, stop);
 

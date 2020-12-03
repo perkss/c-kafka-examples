@@ -1,7 +1,7 @@
 # Notice name prefix of this variable, set by CMake according
 # to value given with "project()" in the root CMakeLists.txt.
 include_directories(${CKafkaExamples_SOURCE_DIR}/LibProject/include)
-add_library(LibProject consumer.c producer.c UpperCaseTopology.c)
+add_library(LibProject consumer.c producer.c upper_case_topology.c)
 
 find_package(PkgConfig REQUIRED)
 
