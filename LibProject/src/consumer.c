@@ -6,7 +6,6 @@
 #include "consumer.h"
 
 int create_consumer(rd_kafka_t **rk, rd_kafka_conf_t *conf, char *errstr) {
-    /* Consumer instance handle */
     *rk = rd_kafka_new(RD_KAFKA_CONSUMER, conf, errstr, strlen(errstr));
     if (!*rk) {
         fprintf(stderr,
@@ -57,15 +56,9 @@ static void stop(int sig) {
     run = 0;
 }
 
-
-static int is_printable(const char *buf, size_t size) {
-    size_t i;
-
-    for (i = 0; i < size; i++)
-        if (!isprint((int) buf[i]))
-            return 0;
-
-    return 1;
+void free_message(message_t *message) {
+    free(message->key);
+    free(message);
 }
 
 static char *extract_key(const rd_kafka_message_t *rkm) {
@@ -74,7 +67,7 @@ static char *extract_key(const rd_kafka_message_t *rkm) {
     return key;
 }
 
-message_t *create_message(const rd_kafka_message_t *rkm) {
+static message_t *create_message(const rd_kafka_message_t *rkm) {
     message_t *message = (message_t *) malloc(sizeof(struct message_s));
     message->key = extract_key(rkm);
     message->key_length = rkm->key_len;
@@ -106,20 +99,6 @@ void *consume(rd_kafka_t **rk, int (*process_message)(message_t **, rd_kafka_t *
         message_t *message = create_message(rkm);
 
         process_message(&message, producer);
-
-        /* Print the message key. */
-        if (message->key && is_printable(message->key, message->key_length))
-            printf(" Key: %.*s\n",
-                   (int) message->key_length, (const char *) message->key);
-        else if (message->key)
-            printf(" Key: (%d bytes)\n", (int) message->key_length);
-
-        /* Print the message value/payload. */
-        if (message->payload && is_printable(message->payload, message->payload_length))
-            printf(" Value: %.*s\n",
-                   (int) message->payload_length, (const char *) message->payload);
-        else if (message->payload)
-            printf(" Value: (%d bytes)\n", (int) message->payload_length);
 
         rd_kafka_message_destroy(rkm);
     }

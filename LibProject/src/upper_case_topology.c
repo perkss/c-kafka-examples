@@ -23,9 +23,7 @@ int process_message_and_send(message_t **param, rd_kafka_t **producer) {
 
     produce(producer, "uppercase-topic", msg->key, msg->payload);
 
-    free(msg->key);
-    free(msg);
-
+    free_message(msg);
     return 0;
 }
 

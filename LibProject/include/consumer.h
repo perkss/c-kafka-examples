@@ -16,6 +16,8 @@ int subscribe(rd_kafka_t **rk, int topic_cnt, char** topics);
 
 void *consume(rd_kafka_t **rk, int (*process_message)(message_t**, rd_kafka_t**), rd_kafka_t **producer);
 
+void free_message(message_t *message);
+
 void clean_up(rd_kafka_t **rk);
 
 #endif //C_KAFKA_EXAMPLES_CONSUMER_H
